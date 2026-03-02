@@ -15,7 +15,7 @@ async function authRequired(req, res, next) {
     [accessToken],
   );
 
-  if (count > 0 || payload.exp < Date.now()) {
+  if (count > 0 || payload.exp < Math.floor(Date.now() / 1000)) {
     return res.error(401, null, "Unauthorized");
   }
   const [users] = await db.query(

@@ -17,7 +17,7 @@ const db = mysql.createPool({
   keepAliveInitialDelay: 0,
   ssl: {
     ca: fs.readFileSync(__dirname + "/isrgrootx1.pem"),
-    rejectUnauthorized: true,
+    rejectUnauthorized: process.env.NODE_ENV === "production",
   },
 });
 

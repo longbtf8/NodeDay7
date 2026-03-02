@@ -7,6 +7,7 @@ const { isValidEmail, isValidPassword } = require("@/utils/validator");
 const getAccessToken = require("@/utils/getAccessToken");
 const db = require("@/config/database");
 const mailService = require("@/services/mail.service");
+const constants = require("@/config/constants");
 
 const register = async (req, res) => {
   const email = req.body?.email;
@@ -71,6 +72,11 @@ const login = async (req, res) => {
   }
   const result = await bcrypt.compare(password, user.password);
   if (result) {
+    if (!user.email_verified_at) {
+      return res.error(constants.httpCodes.forbidden, null, {
+        message: "Please verify your email.",
+      });
+    }
     const accessToken = await authService.signAccessToken(user.id);
     const refreshToken = await authService.createRefreshToken(
       user,
@@ -125,4 +131,16 @@ const refreshToken = async (req, res) => {
     200,
   );
 };
-module.exports = { register, login, getInfoUser, logout, refreshToken };
+
+const verifyEmail = async (req, res) => {
+  const { token } = req.body;
+  await authService.verifyEmail(token);
+};
+module.exports = {
+  register,
+  login,
+  getInfoUser,
+  logout,
+  refreshToken,
+  verifyEmail,
+};
