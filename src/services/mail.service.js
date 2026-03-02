@@ -51,7 +51,6 @@ class MailService {
 </body>
 </html>`,
     });
-    console.log(info);
   }
 }
 module.exports = new MailService();

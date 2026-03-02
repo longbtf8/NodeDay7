@@ -134,7 +134,11 @@ const refreshToken = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
   const { token } = req.body;
-  await authService.verifyEmail(token);
+  const [error, data] = await authService.verifyEmail(token);
+  if (error) {
+    res.error(authConfig.forbidden, null, { message: "Invalid token" });
+  }
+  res.success({ message: "Verified." });
 };
 module.exports = {
   register,

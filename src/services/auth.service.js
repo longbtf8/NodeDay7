@@ -56,7 +56,14 @@ class AuthService {
   }
   async verifyEmail(token) {
     const payload = jwt.verify(token, authConfig.verificationJwtSecret);
-    console.log(payload);
+    if (payload.exp < Date.now() / 1000) {
+      return [true, null];
+    }
+    const userId = payload.sub;
+    await db.query("update users set email_verified_at = now() where id =? ", [
+      userId,
+    ]);
+    return [false, null];
   }
 }
 module.exports = new AuthService();

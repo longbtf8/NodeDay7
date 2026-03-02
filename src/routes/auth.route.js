@@ -7,5 +7,5 @@ router.post("/login", authController.login);
 router.get("/me", authRequired, authController.getInfoUser);
 router.post("/logout", authRequired, authController.logout);
 router.post("/refresh-token", authController.refreshToken);
-router.post("verify-email", authController.verifyEmail);
+router.post("/verify-email", authController.verifyEmail);
 module.exports = router;
