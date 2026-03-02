@@ -2,12 +2,13 @@ const authConfig = require("@/config/auth");
 const mailConfig = require("@/config/mail.config");
 const { transporter } = require("@/libs/nodemailer");
 const jwt = require("jsonwebtoken");
-const { generateVerificationLink } = require("./auth.service");
+const authService = require("./auth.service");
+
 class MailService {
   async sendVerificationEmail(user) {
     const { fromAddress, fromName } = mailConfig;
 
-    const verificationLink = generateVerificationLink(user);
+    const verificationLink = authService.generateVerificationLink(user);
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,

@@ -48,7 +48,7 @@ class AuthService {
   generateVerificationLink(user) {
     const payload = {
       sub: user.id,
-      exp: Date.now() / 1000 + authConfig.ve,
+      exp: Date.now() / 1000 + authConfig.verifyTokenTTL,
     };
     const token = jwt.sign(payload, authConfig.verificationJwtSecret);
     const verificationLink = `http://localhost:5173?token=${token}`;

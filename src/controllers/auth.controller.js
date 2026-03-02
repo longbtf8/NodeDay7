@@ -136,9 +136,9 @@ const verifyEmail = async (req, res) => {
   const { token } = req.body;
   const [error, data] = await authService.verifyEmail(token);
   if (error) {
-    res.error(authConfig.forbidden, null, { message: "Invalid token" });
+    return res.error(constants.forbidden, null, { message: "Invalid token" });
   }
-  res.success({ message: "Verified." });
+  return res.success({ message: "Verified." });
 };
 module.exports = {
   register,
