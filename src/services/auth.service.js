@@ -1,11 +1,11 @@
 const authConfig = require("@/config/auth");
 const jwt = require("jsonwebtoken");
-const base64 = require("../utils/base64");
-const crypto = require("crypto");
-const JsonWebTokenError = require("@/classes/errors/jsonWebTokenError");
+const bcrypt = require("bcrypt");
 const randomKey = require("@/utils/randomKey");
 const authModel = require("@/models/auth.model");
 const db = require("@/config/database");
+const appConfig = require("@/config/app.config");
+const queueService = require("./queue.service");
 
 class AuthService {
   async signAccessToken(id) {
@@ -51,7 +51,7 @@ class AuthService {
       exp: Date.now() / 1000 + authConfig.verifyTokenTTL,
     };
     const token = jwt.sign(payload, authConfig.verificationJwtSecret);
-    const verificationLink = `http://localhost:5173?token=${token}`;
+    const verificationLink = `${appConfig.url}/verify-email?token=${token}`;
     return verificationLink;
   }
   async verifyEmail(token) {
@@ -60,10 +60,49 @@ class AuthService {
       return [true, null];
     }
     const userId = payload.sub;
+    const [[{ count }]] = await db.query(
+      "select count(*) as count from users where id = ? and email_verified_at is not null",
+      [userId],
+    );
+    if (count > 0) {
+      return [true, null];
+    }
     await db.query("update users set email_verified_at = now() where id =? ", [
       userId,
     ]);
     return [false, null];
+  }
+  async changePassword(user, password, newPassword, confirm_password) {
+    if (newPassword !== confirm_password || password === newPassword) {
+      return [
+        {
+          message:
+            "Mật khẩu mới và confirm phải khớp, không được giống với mật khẩu hiện tại",
+          error: true,
+        },
+        null,
+      ];
+    }
+    // check password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return [
+        {
+          message: "Mật khẩu cũ phải đúng",
+          error: true,
+        },
+        null,
+      ];
+    }
+    const hash = await bcrypt.hash(newPassword, authConfig.saltRounds);
+
+    await db.query("update users set password = ? where id=?", [hash, user.id]);
+
+    await queueService.push("passwordChangedEmail", {
+      id: user.id,
+      email: user.email,
+    });
+    return [{ error: false }, null];
   }
 }
 module.exports = new AuthService();

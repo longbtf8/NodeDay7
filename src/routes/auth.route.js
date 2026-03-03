@@ -8,4 +8,5 @@ router.get("/me", authRequired, authController.getInfoUser);
 router.post("/logout", authRequired, authController.logout);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/verify-email", authController.verifyEmail);
+router.post("/change-password", authRequired, authController.changePassword);
 module.exports = router;

@@ -19,7 +19,7 @@ async function authRequired(req, res, next) {
     return res.error(401, null, "Unauthorized");
   }
   const [users] = await db.query(
-    `select id,email,created_at from users where id=?`,
+    `select id,email,password,created_at from users where id=?`,
     [payload.sub],
   );
   const user = users[0];

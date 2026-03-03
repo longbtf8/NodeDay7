@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cors = require("cors");
 require("module-alias/register");
 const exceptionHandler = require("@/middlewares/exceptionHandler");
 const notFoundHandler = require("@/middlewares/notFoundHandler");
@@ -9,6 +10,7 @@ const app = express();
 const port = 3000;
 const apiRouter = require("@/routes/index");
 
+app.use(cors());
 app.use(express.json());
 app.use(responseFormat);
 app.use(apiRateLimiter);

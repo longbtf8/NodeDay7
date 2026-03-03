@@ -8,6 +8,7 @@ const getAccessToken = require("@/utils/getAccessToken");
 const db = require("@/config/database");
 const mailService = require("@/services/mail.service");
 const constants = require("@/config/constants");
+const queueService = require("@/services/queue.service");
 
 const register = async (req, res) => {
   const email = req.body?.email;
@@ -39,6 +40,7 @@ const register = async (req, res) => {
   const insertId = await authModel.registerUser(email, hashedPassword);
 
   const accessToken = await authService.signAccessToken(insertId);
+
   const user = {
     id: insertId,
     email,
@@ -48,7 +50,7 @@ const register = async (req, res) => {
     req.headers["user-agent"],
   );
   //send email
-  await mailService.sendVerificationEmail(user);
+  await queueService.push("sendVerificationEmail", user);
 
   const newUser = {
     id: insertId,
@@ -93,7 +95,9 @@ const login = async (req, res) => {
   return res.error(401, null, "Unauthorized");
 };
 const getInfoUser = async (req, res) => {
-  return res.success(req.currentUser);
+  const user = { ...req.currentUser };
+  delete user.password;
+  return res.success(user);
 };
 
 const logout = async (req, res) => {
@@ -140,6 +144,29 @@ const verifyEmail = async (req, res) => {
   }
   return res.success({ message: "Verified." });
 };
+
+const changePassword = async (req, res) => {
+  const { password, new_password, confirm_password } = req.body;
+  if (!new_password || !confirm_password) {
+    return res.error(constants.httpCodes.badRequest, null, {
+      message: "Vui lòng nhập đủ cách trường passWord",
+    });
+  }
+  const [err] = await authService.changePassword(
+    req.currentUser,
+    password,
+    new_password,
+    confirm_password,
+  );
+  if (err.error) {
+    return res.error(constants.httpCodes.unprocessableEntity, null, {
+      message: err.message,
+    });
+  }
+  return res.success({
+    message: "Đổi mật khẩu thành công ",
+  });
+};
 module.exports = {
   register,
   login,
@@ -147,4 +174,5 @@ module.exports = {
   logout,
   refreshToken,
   verifyEmail,
+  changePassword,
 };
