@@ -42,13 +42,13 @@ class MailService {
     });
   }
   //send password change email
-  async passwordChangedEmail(user) {
+  async sendPasswordChangeEmail(user) {
     const { fromAddress, fromName } = mailConfig;
 
     await this.send({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,
-      template: "auth/passwordChangedEmail",
+      template: "auth/sendPasswordChangeEmail",
       templateData: {
         changeTime: new Date().toLocaleString(),
       },

@@ -98,7 +98,7 @@ class AuthService {
 
     await db.query("update users set password = ? where id=?", [hash, user.id]);
 
-    await queueService.push("passwordChangedEmail", {
+    await queueService.push("sendPasswordChangeEmail", {
       id: user.id,
       email: user.email,
     });
