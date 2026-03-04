@@ -11,6 +11,7 @@ const sleep = require("@/utils/sleep");
     const firstJob = await queueService.getPendingJob();
     if (firstJob) {
       const { id, type, payload: jsonPayload } = firstJob;
+      console.log("Job found:", firstJob);
       try {
         const payload = JSON.parse(jsonPayload);
 

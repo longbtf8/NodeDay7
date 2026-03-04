@@ -45,13 +45,12 @@ class MailService {
   async passwordChangedEmail(user) {
     const { fromAddress, fromName } = mailConfig;
 
-    const result = authService.generateVerificationLink(user);
     await this.send({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,
       template: "auth/passwordChangedEmail",
       templateData: {
-        changeTime: new Date().toLocaleString,
+        changeTime: new Date().toLocaleString(),
       },
       subject: "Thông báo đổi mật khẩu ",
     });
